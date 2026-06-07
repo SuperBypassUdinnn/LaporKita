@@ -1,6 +1,8 @@
+"""Configuration settings for the application."""
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
+    """Application settings loaded from environment variables."""
     PROJECT_NAME: str = "LaporKita"
     DATABASE_URL: str = "sqlite+aiosqlite:///./laporkita.db"
     GEMINI_API_KEY: str

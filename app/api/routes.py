@@ -1,3 +1,5 @@
+"""API routes for LaporKita application."""
+import os
 from fastapi import APIRouter, Request, BackgroundTasks, Form, Depends, status
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
@@ -5,7 +7,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.database import get_db
 from app.db.models import Pelapor, LaporanMentah
 from app.tasks import run_triage_and_notify
-import os
 
 router = APIRouter()
 
@@ -15,8 +16,10 @@ templates = Jinja2Templates(directory="app/templates")
 
 @router.get("/", response_class=HTMLResponse)
 async def read_root(request: Request):
+    """Render the main index page."""
     return templates.TemplateResponse("index.html", {"request": request})
 
+# pylint: disable=too-many-arguments, too-many-positional-arguments
 @router.post("/submit-laporan")
 async def submit_laporan(
     background_tasks: BackgroundTasks,
@@ -27,6 +30,7 @@ async def submit_laporan(
     keluhan: str = Form(...),
     db: AsyncSession = Depends(get_db)
 ):
+    """Handle report submission from the form."""
     pelapor = Pelapor(nik=nik, nama=nama, no_hp=no_hp)
     db.add(pelapor)
     await db.commit()
@@ -43,4 +47,7 @@ async def submit_laporan(
 
     background_tasks.add_task(run_triage_and_notify, laporan.id, keluhan)
 
-    return JSONResponse(status_code=status.HTTP_202_ACCEPTED, content={"message": "Laporan sedang diproses AI"})
+    return JSONResponse(
+        status_code=status.HTTP_202_ACCEPTED,
+        content={"message": "Laporan sedang diproses AI"}
+    )

@@ -1,3 +1,5 @@
+"""AI Prompts configuration."""
+
 TRIASE_SYSTEM_PROMPT = """
 Anda adalah asisten AI untuk sistem 'LaporKita'. Tugas Anda adalah melakukan Zero-Shot Classification terhadap teks aduan warga.
 Analisis teks aduan dan tentukan kategori dinas yang relevan, tingkat urgensi, dan status validitas aduan.
