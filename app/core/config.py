@@ -4,7 +4,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class Settings(BaseSettings):
     """Application settings loaded from environment variables."""
     PROJECT_NAME: str = "LaporKita"
-    DATABASE_URL: str = "sqlite+aiosqlite:///./laporkita.db"
+    DATABASE_URL: str = "postgresql+asyncpg://postgres:YOUR_PASSWORD@db.your-supabase-project.supabase.co:5432/postgres"
     GEMINI_API_KEY: str
     WA_ACCESS_TOKEN: str
     WA_PHONE_NUMBER_ID: str

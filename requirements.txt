@@ -7,4 +7,4 @@ httpx
 sqlalchemy
 google-genai
 pydantic-settings
-aiosqlite
+asyncpg
