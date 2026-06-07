@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}LaporKita - Sistem Triase Keluhan Publik{% endblock %}</title>
+    <meta name="description" content="LaporKita adalah platform inovatif untuk melaporkan keluhan publik yang terintegrasi langsung dengan instansi terkait melalui AI.">
+    <meta name="keywords" content="LaporKita, Keluhan Publik, Pengaduan Masyarakat, AI">
+    <meta property="og:title" content="LaporKita - Layanan Cepat Tanggap">
+    <meta property="og:description" content="Laporkan masalah fasilitas publik dan kami akan teruskan langsung ke dinas terkait.">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS (CDN) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+        }
+    </style>
+    {% block extra_head %}{% endblock %}
+</head>
+<body class="antialiased text-gray-800">
+    {% block content %}{% endblock %}
+    
+    {% block scripts %}{% endblock %}
+</body>
+</html>
