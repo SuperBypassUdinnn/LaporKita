@@ -5,6 +5,6 @@ python-multipart
 python-dotenv
 httpx
 sqlalchemy
-google-generativeai
+google-genai
 pydantic-settings
 aiosqlite

@@ -17,7 +17,7 @@ templates = Jinja2Templates(directory="app/templates")
 @router.get("/", response_class=HTMLResponse)
 async def read_root(request: Request):
     """Render the main index page."""
-    return templates.TemplateResponse("index.html", {"request": request})
+    return templates.TemplateResponse(request=request, name="index.html")
 
 # pylint: disable=too-many-arguments, too-many-positional-arguments
 @router.post("/submit-laporan")
