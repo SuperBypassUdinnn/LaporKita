@@ -1,12 +1,13 @@
 """Background tasks for processing reports."""
 import logging
+import uuid
 from sqlalchemy import select
 from app.services.llm_service import process_triage
 from app.services.wa_service import send_wa_notification
 from app.db.database import AsyncSessionLocal
 from app.db.models import LaporanMentah, TriaseAI
 
-async def run_triage_and_notify(laporan_id: int, teks_keluhan: str):
+async def run_triage_and_notify(laporan_id: uuid.UUID, teks_keluhan: str):
     """Run the AI triage process and send notifications in the background."""
     logging.info("Starting background triage for laporan_id=%s", laporan_id)
 
