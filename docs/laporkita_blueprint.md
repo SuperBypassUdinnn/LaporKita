@@ -4,9 +4,9 @@ Dokumen ini merupakan cetak biru teknis untuk merekayasa dan mengimplementasikan
 
 ## Tumpukan Teknologi (Tech Stack)
 * **Backend:** Python 3.10+, FastAPI, Uvicorn
-* **Database & ORM:** SQLite (Purwarupa awal), SQLAlchemy
-* **AI Middleware:** Google Generative AI (Gemini 1.5 Flash)
-* **Notifikasi:** Meta Graph API (WhatsApp)
+* **Database & ORM:** Supabase PostgreSQL (dengan Async Session Pooler), SQLAlchemy + asyncpg
+* **AI Middleware:** Google GenAI SDK (Gemini 2.5 Flash)
+* **Notifikasi:** Fonnte API (WhatsApp Group Routing berdasarkan Kategori Dinas)
 * **Frontend:** HTML5, TailwindCSS (CDN), Vanilla JS, Jinja2 Templates (SSR untuk SEO)
 
 ---
@@ -14,17 +14,63 @@ Dokumen ini merupakan cetak biru teknis untuk merekayasa dan mengimplementasikan
 ## FASE 1: Inisialisasi Lingkungan dan Dependensi
 Fokus pada tahap ini adalah mengisolasi lingkungan pengembangan dan memastikan seluruh pustaka fundamental tersedia.
 
-### 1. Struktur Direktori Proyek ✅
+### 1. Struktur Direktori Proyek
+Buat struktur direktori eksak berikut pada terminal:
+```text
+laporkita/
+├── app/
+│   ├── __init__.py
+│   ├── main.py                 
+│   ├── core/                   
+│   │   ├── config.py           
+│   │   └── prompts.py          
+│   ├── api/                    
+│   │   └── routes.py           
+│   ├── services/               
+│   │   ├── llm_service.py      
+│   │   └── wa_service.py       
+│   ├── db/                     
+│   │   ├── database.py         
+│   │   └── models.py           
+│   ├── templates/              
+│   │   ├── base.html           
+│   │   └── index.html          
+│   └── static/                 
+│       ├── css/
+│       │   └── style.css       
+│       └── js/
+│           └── app.js          
+├── .env                        
+├── .gitignore
+└── requirements.txt
+```
 
-### 2. Konfigurasi requirements.txt ✅
+### 2. Konfigurasi requirements.txt
+Isi file `requirements.txt` dengan dependensi berikut:
+```text
+fastapi
+uvicorn
+jinja2
+python-multipart
+python-dotenv
+httpx
+sqlalchemy
+google-generativeai
+```
 
 ### 3. Konfigurasi .env
 Cuplikan isi:
 ```.env
-DATABASE_URL=sqlite:///./laporkita.db
+DATABASE_URL=postgresql+asyncpg://postgres:[YOUR-PASSWORD]@[YOUR-SUPABASE-HOST]:6543/postgres
 GEMINI_API_KEY=AIzaSy_YOUR_GEMINI_KEY_HERE
-WA_ACCESS_TOKEN=EAAB_YOUR_META_TOKEN_HERE
-WA_PHONE_NUMBER_ID=YOUR_WA_PHONE_ID
+FONNTE_TOKEN=your_fonnte_token_here
+WA_GROUP_PU=your_whatsapp_group_id_for_pu@g.us
+WA_GROUP_PDAM=your_whatsapp_group_id_for_pdam@g.us
+WA_GROUP_PERHUBUNGAN=your_whatsapp_group_id_for_perhubungan@g.us
+WA_GROUP_KEBERSIHAN=your_whatsapp_group_id_for_kebersihan@g.us
+WA_GROUP_SOSIAL=your_whatsapp_group_id_for_sosial@g.us
+WA_GROUP_KESEHATAN=your_whatsapp_group_id_for_kesehatan@g.us
+WA_GROUP_UMUM=your_whatsapp_group_id_for_umum@g.us
 ```
 
 ---
@@ -33,9 +79,10 @@ WA_PHONE_NUMBER_ID=YOUR_WA_PHONE_ID
 Membangun skema relasional tabel untuk menampung aliran data mentah dan hasil ekstraksi kecerdasan buatan.
 
 ### 1. Inisialisasi Mesin Database (app/db/database.py)
-- Impor create_engine, sessionmaker, dan declarative_base dari SQLAlchemy.
-- Buat engine yang merujuk pada DATABASE_URL dari file konfigurasi.
-- Konfigurasikan sesi SessionLocal untuk membuka jalur transaksi ke database.
+- Impor `create_async_engine`, `async_sessionmaker`, dan `declarative_base` dari SQLAlchemy.
+- Buat async engine yang merujuk pada `DATABASE_URL` dari file konfigurasi.
+- Menggunakan Supabase Connection Pooler (port 6543) dengan menambahkan `connect_args={"prepared_statement_cache_size": 0, "statement_cache_size": 0}` ke `create_async_engine` untuk mencegah konflik prepared statements pada mode transaksi.
+- Konfigurasikan sesi `AsyncSessionLocal` untuk membuka jalur transaksi asinkronus ke database.
 
 ### 2. Definisi Skema Tabel (app/db/models.py)
 Deklarasikan tiga entitas tabel utama:
@@ -53,14 +100,16 @@ Membangun modul independen untuk menangani panggilan API pihak ketiga guna mence
 - Tulis instruksi Zero-Shot Classification ketat yang memaksa Gemini memformat balasan murni sebagai JSON: {"kategori_dinas": "...", "urgensi": "...", "status": "..."} dan aturan validasi jika teks warga tidak memiliki lokasi jalan yang jelas.
 
 ### 2. Layanan Pemrosesan LLM (app/services/llm_service.py)
-- Lakukan inisialisasi kunci API via google.generativeai.configure().
-- Buat fungsi asinkronus process_triage(text: str) yang mengkombinasikan teks warga dengan TRIASE_SYSTEM_PROMPT.
-- Fungsi harus mencakup error handling (try-except) jika respons JSON dari AI gagal di-parsing.
+- Lakukan inisialisasi client Google GenAI SDK via `client = genai.Client(api_key=...)`.
+- Buat fungsi asinkronus `process_triage(text: str)` yang menggunakan model `gemini-2.5-flash` dengan konfigurasi output `response_mime_type="application/json"` dan system instruction `TRIASE_SYSTEM_PROMPT`.
+- Fungsi harus mencakup error handling (try-except) jika respons JSON dari AI gagal di-parsing dan mengembalikan fallback response.
 
 ### 3. Layanan Disposisi Webhook (app/services/wa_service.py)
-- Buat fungsi asinkronus send_wa_notification(payload: dict).
-- Gunakan pustaka httpx.AsyncClient untuk melakukan HTTP POST ke Endpoint Meta Graph API.
-- Susun template pesan dinamis yang memasukkan data dinas, lokasi keluhan, dan tingkat urgensi.
+- Buat fungsi asinkronus `send_wa_notification(payload: dict)`.
+- Menggunakan Fonnte API (`https://api.fonnte.com/send`) untuk mengirim pesan WhatsApp ke grup dinas.
+- Gunakan pustaka `httpx.AsyncClient` untuk melakukan HTTP POST dengan header `Authorization` yang diisi oleh `FONNTE_TOKEN`.
+- Resolusi target grup dilakukan secara dinamis berdasarkan pemetaan `kategori_dinas` ke ID WhatsApp Group (`WA_GROUP_*`) di `.env` (untuk menghindari hardcode ID/Token).
+- Susun template pesan dinamis yang memasukkan data dinas, lokasi keluhan, tingkat urgensi, dan keluhan teks bebas.
 
 ---
 
