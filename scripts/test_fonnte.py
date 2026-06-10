@@ -8,7 +8,7 @@ load_dotenv()
 
 FONNTE_TOKEN = os.getenv("FONNTE_TOKEN")
 # Anda dapat mengganti ini dengan Target ID/Tag Fonnte tujuan Anda
-TEST_TARGET = "grup_dinas_umum"
+TEST_TARGET = os.getenv("WA_GROUP_UMUM", "grup_dinas_umum")
 
 async def test_fonnte():
     print("Mencoba mengirim pesan WhatsApp menggunakan Fonnte API...")
