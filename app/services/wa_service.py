@@ -5,9 +5,9 @@ from app.core.config import settings
 
 async def send_wa_notification(payload: dict):
     """Send a WhatsApp notification with the given payload."""
-    url = f"https://graph.facebook.com/v17.0/{settings.WA_PHONE_NUMBER_ID}/messages"
+    url = "https://api.fonnte.com/send"
     headers = {
-        "Authorization": f"Bearer {settings.WA_ACCESS_TOKEN}",
+        "Authorization": settings.FONNTE_TOKEN,
         "Content-Type": "application/json"
     }
 
@@ -18,11 +18,13 @@ async def send_wa_notification(payload: dict):
         f"Keluhan: {payload.get('keluhan_teks_bebas')}"
     )
 
+    # Resolve target from mapping based on kategori_dinas
+    kategori = payload.get("kategori_dinas", "Tidak Diketahui")
+    target = settings.DINAS_TARGET_MAPPING.get(kategori, settings.DINAS_TARGET_MAPPING["Dinas Umum"])
+
     data = {
-        "messaging_product": "whatsapp",
-        "to": "TARGET_PHONE_NUMBER",
-        "type": "text",
-        "text": {"body": message_text}
+        "target": target,
+        "message": message_text
     }
 
     async with httpx.AsyncClient() as client:

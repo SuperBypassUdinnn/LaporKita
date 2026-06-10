@@ -36,7 +36,6 @@ async def run_triage_and_notify(laporan_id: uuid.UUID, teks_keluhan: str):
                     "urgensi": triase_result.urgensi,
                     "kategori_dinas": triase_result.kategori_dinas,
                     "kecamatan": laporan.kecamatan,
-                    "keluhan_teks_bebas": laporan.keluhan_teks_bebas,
-                    "no_hp": "TARGET_PHONE"
+                    "keluhan_teks_bebas": laporan.keluhan_teks_bebas
                 }
                 await send_wa_notification(payload)
