@@ -13,7 +13,7 @@ async def process_triage(text: str) -> TriaseResponse:
     """Process the report text using Gemini to classify and triage."""
     try:
         response = await client.aio.models.generate_content(
-            model='gemini-1.5-flash',
+            model='gemini-2.5-flash',
             contents=text,
             config=types.GenerateContentConfig(
                 response_mime_type="application/json",
