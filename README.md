@@ -57,6 +57,7 @@ LaporKita/
 │   └── tasks.py                  # Background tasks untuk triase & notifikasi
 ├── docs/
 │   ├── architecture.md           # Arsitektur sistem (frontend & backend)
+│   ├── installation.md           # Panduan instalasi dan konfigurasi
 │   ├── laporkita_blueprint.md    # Dokumen cetak biru rekayasa sistem
 │   └── progress.md               # Dokumentasi progress & rencana pengembangan
 ├── scripts/
