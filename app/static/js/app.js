@@ -32,6 +32,15 @@ document.addEventListener("DOMContentLoaded", () => {
                 statusMessage.textContent = result.message || "Laporan berhasil diterima dan sedang dianalisis!";
                 statusMessage.classList.remove("hidden");
                 statusMessage.classList.add("bg-green-100", "text-green-800");
+                
+                if (result.kode_tiket) {
+                    const tiketBox = document.getElementById("tiketBox");
+                    const tiketCode = document.getElementById("tiketCode");
+                    if (tiketBox && tiketCode) {
+                        tiketCode.textContent = result.kode_tiket;
+                        tiketBox.classList.remove("hidden");
+                    }
+                }
                 form.reset();
             } else {
                 // Error UI

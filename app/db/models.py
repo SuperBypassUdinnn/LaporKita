@@ -21,6 +21,7 @@ class LaporanMentah(Base):
     kecamatan = Column(String)
     keluhan_teks_bebas = Column(Text)
     timestamp = Column(DateTime(timezone=True), server_default=func.now())
+    kode_tiket = Column(String, unique=True, index=True)
 
 class TriaseAI(Base):
     """Model representing the AI triage results."""
@@ -31,3 +32,12 @@ class TriaseAI(Base):
     urgensi = Column(String)
     status_json = Column(String)
     waktu_disposisi = Column(DateTime(timezone=True), onupdate=func.now())
+
+class Petugas(Base):
+    """Model representing a department officer/admin."""
+    __tablename__ = "petugas"
+    id = Column(Uuid(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    username = Column(String, unique=True, nullable=False)
+    password_hash = Column(String, nullable=False)
+    nama_dinas = Column(String, nullable=False)
+
