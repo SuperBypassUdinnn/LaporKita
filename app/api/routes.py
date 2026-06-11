@@ -27,6 +27,10 @@ def create_access_token(data: dict):
 async def read_root(request: Request):
     return templates.TemplateResponse(request=request, name="index.html")
 
+@router.get("/admin/dashboard", response_class=HTMLResponse)
+async def read_dashboard(request: Request):
+    return templates.TemplateResponse(request=request, name="dashboard.html")
+
 @router.post("/submit-laporan")
 async def submit_laporan(
     background_tasks: BackgroundTasks,

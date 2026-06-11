@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard Monitoring Internal | LaporKita{% endblock %}
+
+{% block content %}
+<nav class="bg-indigo-700 text-white p-4 shadow-md">
+    <div class="max-w-7xl mx-auto flex justify-between items-center">
+        <h1 class="text-xl font-bold tracking-tight">LaporKita <span class="text-indigo-200 text-sm font-normal">| Backoffice</span></h1>
+        <span class="text-sm bg-indigo-800 px-3 py-1 rounded-full border border-indigo-600">Admin Petugas</span>
+    </div>
+</nav>
+
+<main class="max-w-7xl mx-auto p-6 space-y-6">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col justify-between">
+            <span class="text-sm font-medium text-gray-500 uppercase tracking-wider">Total Laporan Masuk</span>
+            <span id="txtTotal" class="text-4xl font-extrabold text-gray-900 mt-2">0</span>
+        </div>
+        <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col justify-between">
+            <span class="text-sm font-medium text-gray-500 uppercase tracking-wider">Laporan Diterima (Accepted)</span>
+            <span id="txtAccepted" class="text-4xl font-extrabold text-green-600 mt-2">0</span>
+        </div>
+        <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col justify-between">
+            <span class="text-sm font-medium text-gray-500 uppercase tracking-wider">Ditolak AI (Rejected)</span>
+            <span id="txtRejected" class="text-4xl font-extrabold text-red-600 mt-2">0</span>
+        </div>
+    </div>
+
+    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 max-w-md mx-auto">
+        <h2 class="text-md font-semibold text-gray-700 mb-4 text-center">Persentase Validitas Keluhan (AI Triage)</h2>
+        <div class="relative h-64 flex justify-center">
+            <canvas id="chartValiditas"></canvas>
+        </div>
+    </div>
+</main>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", async () => {
+    try {
+        const response = await fetch("/admin/dashboard-stats");
+        const data = await response.json();
+
+        document.getElementById("txtTotal").textContent = data.total_laporan;
+        document.getElementById("txtAccepted").textContent = data.accepted_ai;
+        document.getElementById("txtRejected").textContent = data.rejected_ai;
+
+        const ctx = document.getElementById('chartValiditas').getContext('2d');
+        new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: ['Diterima (Accepted)', 'Ditolak AI (Rejected)'],
+                datasets: [{
+                    data: [data.accepted_ai, data.rejected_ai],
+                    backgroundColor: ['#10B981', '#EF4444'],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false
+            }
+        });
+    } catch (error) {
+        console.error("Gagal memuat data grafik dashboard:", error);
+    }
+});
+</script>
+{% endblock %}
