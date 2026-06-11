@@ -3,6 +3,7 @@ import os
 from fastapi import APIRouter, Request, BackgroundTasks, Form, Depends, status
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.database import get_db
 from app.db.models import Pelapor, LaporanMentah
@@ -31,10 +32,23 @@ async def submit_laporan(
     db: AsyncSession = Depends(get_db)
 ):
     """Handle report submission from the form."""
-    pelapor = Pelapor(nik=nik, nama=nama, no_hp=no_hp)
-    db.add(pelapor)
-    await db.commit()
-    await db.refresh(pelapor)
+    # Check if pelapor already exists by NIK
+    stmt = select(Pelapor).where(Pelapor.nik == nik)
+    result = await db.execute(stmt)
+    pelapor = result.scalar_one_or_none()
+
+    if not pelapor:
+        pelapor = Pelapor(nik=nik, nama=nama, no_hp=no_hp)
+        db.add(pelapor)
+        await db.commit()
+        await db.refresh(pelapor)
+    else:
+        # Update nama or no_hp if they changed
+        if pelapor.nama != nama or pelapor.no_hp != no_hp:
+            pelapor.nama = nama
+            pelapor.no_hp = no_hp
+            await db.commit()
+            await db.refresh(pelapor)
 
     laporan = LaporanMentah(
         pelapor_id=pelapor.id,

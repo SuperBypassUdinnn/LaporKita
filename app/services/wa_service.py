@@ -1,7 +1,7 @@
 """Service for sending WhatsApp notifications via Meta Graph API."""
 import logging
 import httpx
-from app.core.config import settings
+from app.core.config import settings, DINAS_TARGET_MAPPING
 
 async def send_wa_notification(payload: dict):
     """Send a WhatsApp notification with the given payload."""
@@ -20,7 +20,7 @@ async def send_wa_notification(payload: dict):
 
     # Resolve target from mapping based on kategori_dinas
     kategori = payload.get("kategori_dinas", "Tidak Diketahui")
-    target = settings.DINAS_TARGET_MAPPING.get(kategori, settings.DINAS_TARGET_MAPPING["Dinas Umum"])
+    target = DINAS_TARGET_MAPPING.get(kategori, DINAS_TARGET_MAPPING["Dinas Umum"])
 
     data = {
         "target": target,
