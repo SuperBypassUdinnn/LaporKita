@@ -31,6 +31,11 @@ async def send_wa_notification(payload: dict):
         try:
             response = await client.post(url, json=data, headers=headers)
             response.raise_for_status()
-            logging.info("WhatsApp notification sent successfully.")
+            res_data = response.json()
+            if res_data.get("status") is True:
+                logging.info("WhatsApp notification sent successfully.")
+            else:
+                reason = res_data.get("reason", "Unknown reason")
+                logging.error("Fonnte API rejected the message: %s", reason)
         except Exception as e: # pylint: disable=broad-exception-caught
             logging.error("Failed to send WA notification: %s", e)
