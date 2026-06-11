@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block title %}Login Petugas | LaporKita{% endblock %}
+
+{% block content %}
+<main class="min-h-screen flex items-center justify-center py-12 px-4 bg-gradient-to-br from-slate-100 to-slate-200">
+    <div class="max-w-md w-full bg-white p-10 rounded-2xl shadow-xl border border-gray-100 space-y-6">
+        <div class="text-center">
+            <h1 class="text-3xl font-extrabold text-slate-800">Lapor<span class="text-indigo-600">Kita</span></h1>
+            <p class="mt-1 text-sm text-gray-500">Portal Petugas Dinas</p>
+        </div>
+
+        {% if error %}
+        <div class="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700 text-center">{{ error }}</div>
+        {% endif %}
+
+        <form method="POST" action="/admin/login" class="space-y-4">
+            <div>
+                <label for="username" class="block text-sm font-medium text-gray-700">Username</label>
+                <input id="username" name="username" type="text" required autofocus
+                    class="mt-1 w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            </div>
+            <div>
+                <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
+                <input id="password" name="password" type="password" required
+                    class="mt-1 w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            </div>
+            <button type="submit"
+                class="w-full py-2.5 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 transition-colors text-sm">
+                Masuk
+            </button>
+        </form>
+    </div>
+</main>
+{% endblock %}

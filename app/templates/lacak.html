@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+
+{% block title %}Lacak Laporan | LaporKita{% endblock %}
+
+{% block content %}
+<main class="min-h-screen flex items-center justify-center py-12 px-4 bg-gradient-to-br from-blue-50 to-indigo-100">
+    <div class="max-w-lg w-full space-y-6 bg-white p-10 rounded-2xl shadow-xl border border-gray-100">
+        <div>
+            <a href="/" class="text-sm text-indigo-600 hover:text-indigo-800">← Kembali ke Beranda</a>
+            <h1 class="mt-4 text-3xl font-extrabold text-indigo-700">Lacak Laporan</h1>
+            <p class="mt-1 text-sm text-gray-500">Masukkan kode tiket yang Anda terima setelah mengirim laporan.</p>
+        </div>
+
+        <div class="flex gap-2">
+            <input id="inputKode" type="text" placeholder="Contoh: LK-A3X9F2"
+                class="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 uppercase"
+                style="text-transform: uppercase">
+            <button id="btnCari"
+                class="px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors">
+                Cari
+            </button>
+        </div>
+
+        <div id="hasilBox" class="hidden"></div>
+    </div>
+</main>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const inputKode = document.getElementById('inputKode');
+    const btnCari = document.getElementById('btnCari');
+    const hasilBox = document.getElementById('hasilBox');
+
+    const URGENSI_COLOR = { 'Tinggi': 'red', 'Sedang': 'yellow', 'Rendah': 'green' };
+    const STATUS_LABEL = { 'ACCEPTED': '✅ Diterima & Diteruskan', 'REJECTED': '❌ Ditolak AI (Lokasi Tidak Jelas)', 'MENUNGGU': '⏳ Sedang Diproses AI' };
+    const STATUS_COLOR = { 'ACCEPTED': 'green', 'REJECTED': 'red', 'MENUNGGU': 'yellow' };
+
+    async function cariTiket() {
+        const kode = inputKode.value.trim().toUpperCase();
+        if (!kode) return;
+
+        btnCari.disabled = true;
+        btnCari.textContent = 'Mencari...';
+        hasilBox.classList.add('hidden');
+
+        try {
+            const res = await fetch(`/api/lacak/${encodeURIComponent(kode)}`);
+            const data = await res.json();
+
+            if (!res.ok) {
+                hasilBox.innerHTML = `<div class="p-4 bg-red-50 border border-red-200 rounded-xl text-sm text-red-700">❌ ${data.detail || 'Kode tiket tidak ditemukan.'}</div>`;
+            } else {
+                const urg = data.urgensi !== '-' ? data.urgensi : null;
+                const urgColor = urg ? URGENSI_COLOR[urg] || 'gray' : 'gray';
+                const statusLabel = STATUS_LABEL[data.status] || data.status;
+                const statusColor = STATUS_COLOR[data.status] || 'gray';
+                const tgl = data.timestamp ? new Date(data.timestamp).toLocaleString('id-ID') : '-';
+
+                hasilBox.innerHTML = `
+                    <div class="border border-gray-200 rounded-xl overflow-hidden">
+                        <div class="bg-indigo-600 px-4 py-3 flex justify-between items-center">
+                            <span class="text-white font-bold text-lg tracking-widest">${data.kode_tiket}</span>
+                            <span class="text-indigo-200 text-xs">${tgl}</span>
+                        </div>
+                        <div class="p-4 space-y-3 text-sm">
+                            <div class="flex justify-between">
+                                <span class="text-gray-500">Status</span>
+                                <span class="font-semibold text-${statusColor}-700">${statusLabel}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-500">Dinas Tujuan</span>
+                                <span class="font-medium">${data.kategori_dinas}</span>
+                            </div>
+                            ${urg ? `<div class="flex justify-between">
+                                <span class="text-gray-500">Urgensi</span>
+                                <span class="font-medium text-${urgColor}-700">${urg}</span>
+                            </div>` : ''}
+                            <div class="flex justify-between">
+                                <span class="text-gray-500">Kecamatan</span>
+                                <span class="font-medium">${data.kecamatan}</span>
+                            </div>
+                            <div class="pt-2 border-t border-gray-100">
+                                <p class="text-gray-500 mb-1">Detail Keluhan</p>
+                                <p class="text-gray-800">${data.keluhan}</p>
+                            </div>
+                        </div>
+                    </div>`;
+            }
+            hasilBox.classList.remove('hidden');
+        } catch (err) {
+            hasilBox.innerHTML = `<div class="p-4 bg-red-50 border border-red-200 rounded-xl text-sm text-red-700">❌ Gagal menghubungi server.</div>`;
+            hasilBox.classList.remove('hidden');
+        } finally {
+            btnCari.disabled = false;
+            btnCari.textContent = 'Cari';
+        }
+    }
+
+    btnCari.addEventListener('click', cariTiket);
+    inputKode.addEventListener('keydown', e => { if (e.key === 'Enter') cariTiket(); });
+</script>
+{% endblock %}
