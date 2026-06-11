@@ -69,6 +69,13 @@ Modul independen untuk berinteraksi dengan layanan pihak ketiga:
 ### 4. Background Tasks (`app/tasks.py`)
 Mengeksekusi proses triase AI dan notifikasi secara non-blocking di latar belakang menggunakan `BackgroundTasks` bawaan FastAPI. Hal ini memastikan pengguna tidak mengalami loading halaman yang lama saat sistem menghubungi API eksternal (Google Gemini dan Fonnte).
 
+### 5. Otentikasi & Keamanan Portal Admin
+Untuk menjaga kesederhanaan arsitektur dan meminimalkan celah keamanan permukaan:
+- **Kredensial Tunggal Terpusat:** Sistem tidak lagi menyimpan akun petugas dinas di dalam basis data (tabel `petugas` ditiadakan). Sebagai gantinya, satu akun administrator tunggal dikonfigurasi langsung via variabel lingkungan `.env` (`ADMIN_USERNAME` dan `ADMIN_PASSWORD`).
+- **Pencabutan Registrasi Mandiri:** Halaman pendaftaran petugas (`/admin/register`) dihapus untuk mencegah registrasi pihak luar yang tidak dikenal.
+- **Manajemen Sesi JWT via Cookie HTTPOnly:** Autentikasi menggunakan JSON Web Token (JWT) yang di-generate langsung dari sisi server saat login berhasil, kemudian disimpan di cookie peramban dengan flag `HTTPOnly` dan `Secure`. Ini melindungi token dari pencurian melalui serangan Cross-Site Scripting (XSS).
+- **Proteksi Endpoint:** Endpoint dashboard `/admin/dashboard` dan API statistik `/api/admin/*` diverifikasi oleh middleware/fungsi pemeriksa JWT token secara asinkron.
+
 ---
 
 ## Arsitektur Frontend (Client-Side)

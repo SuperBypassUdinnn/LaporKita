@@ -71,6 +71,10 @@ WA_GROUP_KEBERSIHAN=your_whatsapp_group_id_for_kebersihan@g.us
 WA_GROUP_SOSIAL=your_whatsapp_group_id_for_sosial@g.us
 WA_GROUP_KESEHATAN=your_whatsapp_group_id_for_kesehatan@g.us
 WA_GROUP_UMUM=your_whatsapp_group_id_for_umum@g.us
+
+# Kredensial Administrator Portal Dinas (Hardcoded)
+ADMIN_USERNAME=admin
+ADMIN_PASSWORD=admin123
 ```
 
 ---

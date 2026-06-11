@@ -50,20 +50,26 @@ Berikut adalah detail pekerjaan yang telah diselesaikan:
   - [test_gemini.py](file:///home/superbypassudin/.clone/Github/LaporKita/scripts/test_gemini.py) (Lolos uji generasi konten prompt).
   - [test_fonnte.py](file:///home/superbypassudin/.clone/Github/LaporKita/scripts/test_fonnte.py) (Lolos uji pengiriman notifikasi grup).
 
+### 8. Sistem Tiket & Pelacakan Warga (100% Selesai)
+- [x] Mengenerasi kode tiket unik berformat `LK-XXXXXX` (6 karakter alfanumerik acak) untuk setiap pengaduan warga.
+- [x] Membuat halaman pelacakan keluhan warga (`/lacak`) yang terintegrasi secara asinkron dengan API backend (`/api/lacak/{kode}`).
+- [x] Menambahkan tombol salin kode tiket otomatis di halaman utama setelah keluhan sukses terkirim.
+
+### 9. Dashboard Monitoring & Otentikasi Admin Sederhana (100% Selesai)
+- [x] Membuat dashboard pemantauan internal (`/admin/dashboard`) yang dilindungi sesi JWT Token.
+- [x] Menampilkan statistik ringkasan, visualisasi grafik jumlah laporan per dinas, dan tingkat urgensi keluhan berbasis Chart.js.
+- [x] Menyederhanakan arsitektur autentikasi dengan menggunakan satu akun administrator tunggal berbasis file `.env` (`ADMIN_USERNAME` dan `ADMIN_PASSWORD`) tanpa memerlukan tabel `petugas` pada database.
+- [x] Menghapus halaman registrasi petugas untuk alasan keamanan dan penyederhanaan akses.
+
 ---
 
 ## Rencana Pengembangan Selanjutnya (Next Steps)
 
 Untuk pengembangan lebih lanjut dari sistem LaporKita, berikut adalah beberapa poin yang diusulkan:
 
-1. **Dashboard Monitoring Internal (Backoffice)**
-   - [ ] Membuat halaman khusus admin dinas untuk memantau status laporan yang masuk.
-   - [ ] Menampilkan statistik jumlah laporan per dinas, persentase keluhan yang ditolak AI, dan tingkat urgensi keluhan dalam bentuk grafik visual.
-2. **Sistem Tiket & Pelacakan Warga**
-   - [ ] Mengeneralisasi kode tiket unik (UUID pendek atau ID unik acak) untuk setiap pengaduan yang sukses disimpan.
-   - [ ] Membuat halaman pelacakan keluhan warga agar warga bisa memantau perkembangan tindak lanjut dinas dengan menginput kode tiket.
-3. **Peningkatan Akurasi Triase AI**
+1. **Peningkatan Akurasi Triase AI**
    - [ ] Menerapkan teknik *Few-Shot Prompting* dengan memberikan contoh aduan dan klasifikasi yang benar untuk meningkatkan akurasi analisis AI.
    - [ ] Menambahkan penanganan fallback dinas jika deskripsi keluhan tumpang tindih.
-4. **Otentikasi Petugas Dinas**
-   - [ ] Menerapkan JWT Authentication untuk membatasi akses ke Dashboard Monitoring hanya bagi admin/petugas dinas yang sah.
+2. **Ekspor Data Laporan**
+   - [ ] Menyediakan fitur ekspor daftar laporan dalam format CSV atau PDF untuk kebutuhan pelaporan dinas bulanan.
+

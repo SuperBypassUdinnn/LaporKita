@@ -87,6 +87,10 @@ WA_GROUP_KEBERSIHAN=120363xxxxxxxxx@g.us
 WA_GROUP_SOSIAL=120363xxxxxxxxx@g.us
 WA_GROUP_KESEHATAN=120363xxxxxxxxx@g.us
 WA_GROUP_UMUM=120363xxxxxxxxx@g.us
+
+# Kredensial Administrator Portal Dinas (Hardcoded)
+ADMIN_USERNAME=admin
+ADMIN_PASSWORD=admin123
 ```
 
 ### Catatan Penting Mengenai Database Supabase
