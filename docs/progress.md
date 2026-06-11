@@ -60,6 +60,7 @@ Berikut adalah detail pekerjaan yang telah diselesaikan:
 - [x] Menampilkan statistik ringkasan, visualisasi grafik jumlah laporan per dinas, dan tingkat urgensi keluhan berbasis Chart.js.
 - [x] Menyederhanakan arsitektur autentikasi dengan menggunakan satu akun administrator tunggal berbasis file `.env` (`ADMIN_USERNAME` dan `ADMIN_PASSWORD`) tanpa memerlukan tabel `petugas` pada database.
 - [x] Menghapus halaman registrasi petugas untuk alasan keamanan dan penyederhanaan akses.
+- [x] Menambahkan tombol "Detail" pada masing-masing entri keluhan di tabel dashboard untuk menyajikan seluruh rincian keluhan beserta data identitas pelapor (Nama Lengkap, NIK, dan Nomor HP/WhatsApp) melalui tampilan modal dialog interaktif.
 
 ---
 

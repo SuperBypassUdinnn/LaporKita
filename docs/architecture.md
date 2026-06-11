@@ -75,6 +75,8 @@ Untuk menjaga kesederhanaan arsitektur dan meminimalkan celah keamanan permukaan
 - **Pencabutan Registrasi Mandiri:** Halaman pendaftaran petugas (`/admin/register`) dihapus untuk mencegah registrasi pihak luar yang tidak dikenal.
 - **Manajemen Sesi JWT via Cookie HTTPOnly:** Autentikasi menggunakan JSON Web Token (JWT) yang di-generate langsung dari sisi server saat login berhasil, kemudian disimpan di cookie peramban dengan flag `HTTPOnly` dan `Secure`. Ini melindungi token dari pencurian melalui serangan Cross-Site Scripting (XSS).
 - **Proteksi Endpoint:** Endpoint dashboard `/admin/dashboard` dan API statistik `/api/admin/*` diverifikasi oleh middleware/fungsi pemeriksa JWT token secara asinkron.
+- **Pengambilan Detail Pelapor via ORM Join:** Saat admin memuat daftar laporan via `/api/admin/laporan`, backend melakukan join asinkronus ke tabel `Pelapor` untuk mengambil NIK, nama lengkap, dan nomor kontak pelapor guna disajikan secara mendalam di modal detail tanpa membiarkan data sensitif tersebut bocor ke publik atau terindeks mesin pencari.
+
 
 ---
 
