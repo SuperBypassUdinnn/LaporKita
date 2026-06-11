@@ -31,11 +31,3 @@ CREATE TABLE IF NOT EXISTS triase_ai (
     status_json VARCHAR,
     waktu_disposisi TIMESTAMPTZ DEFAULT NOW()
 );
-
--- Buat tabel petugas untuk otentikasi JWT petugas dinas
-CREATE TABLE IF NOT EXISTS petugas (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    username VARCHAR UNIQUE NOT NULL,
-    password_hash VARCHAR NOT NULL,
-    nama_dinas VARCHAR NOT NULL
-);

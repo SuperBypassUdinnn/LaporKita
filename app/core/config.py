@@ -17,6 +17,10 @@ class Settings(BaseSettings):
     WA_GROUP_KESEHATAN: str
     WA_GROUP_UMUM: str
 
+    # Kredensial Administrator Portal Dinas (Hardcoded)
+    ADMIN_USERNAME: str
+    ADMIN_PASSWORD: str
+
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 
 settings = Settings()

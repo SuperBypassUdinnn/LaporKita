@@ -9,9 +9,10 @@ from fastapi.templating import Jinja2Templates
 from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.database import get_db
-from app.db.models import Pelapor, LaporanMentah, TriaseAI, Petugas
+from app.db.models import Pelapor, LaporanMentah, TriaseAI
 from app.tasks import run_triage_and_notify
 from app.services.auth_service import decode_access_token
+from app.core.config import settings
 
 router = APIRouter()
 
@@ -138,63 +139,19 @@ async def login_page(request: Request, error: Optional[str] = None, success: Opt
 async def login_post(
     username: str = Form(...),
     password: str = Form(...),
-    db: AsyncSession = Depends(get_db)
 ):
     """Handle admin login submission."""
-    stmt = select(Petugas).where(Petugas.username == username)
-    result = await db.execute(stmt)
-    petugas = result.scalar_one_or_none()
-
-    from app.services.auth_service import verify_password, create_access_token
-    if not petugas or not verify_password(password, petugas.password_hash):
+    from app.services.auth_service import create_access_token
+    if username != settings.ADMIN_USERNAME or password != settings.ADMIN_PASSWORD:
         return RedirectResponse(
             url="/admin/login?error=Username+atau+password+salah", 
             status_code=status.HTTP_303_SEE_OTHER
         )
 
-    token = create_access_token(data={"sub": petugas.username})
+    token = create_access_token(data={"sub": username})
     response = RedirectResponse(url="/admin/dashboard", status_code=status.HTTP_303_SEE_OTHER)
     response.set_cookie(key="access_token", value=token, httponly=True)
     return response
-
-@router.get("/admin/register", response_class=HTMLResponse)
-async def register_page(request: Request, error: Optional[str] = None):
-    """Render the admin registration page."""
-    return templates.TemplateResponse(request=request, name="register.html", context={"error": error})
-
-@router.post("/admin/register")
-async def register_post(
-    username: str = Form(...),
-    password: str = Form(...),
-    nama_dinas: str = Form(...),
-    db: AsyncSession = Depends(get_db)
-):
-    """Handle admin registration submission."""
-    stmt = select(Petugas).where(Petugas.username == username)
-    result = await db.execute(stmt)
-    existing = result.scalar_one_or_none()
-
-    if existing:
-        return RedirectResponse(
-            url="/admin/register?error=Username+sudah+terdaftar", 
-            status_code=status.HTTP_303_SEE_OTHER
-        )
-
-    from app.services.auth_service import hash_password
-    pwd_hash = hash_password(password)
-
-    petugas = Petugas(
-        username=username,
-        password_hash=pwd_hash,
-        nama_dinas=nama_dinas
-    )
-    db.add(petugas)
-    await db.commit()
-
-    return RedirectResponse(
-        url="/admin/login?success=Pendaftaran+berhasil.+Silakan+masuk.", 
-        status_code=status.HTTP_303_SEE_OTHER
-    )
 
 @router.get("/admin/logout")
 async def logout():
@@ -204,7 +161,7 @@ async def logout():
     return response
 
 @router.get("/admin/dashboard", response_class=HTMLResponse)
-async def dashboard_page(request: Request, db: AsyncSession = Depends(get_db)):
+async def dashboard_page(request: Request):
     """Render the admin dashboard page."""
     access_token = request.cookies.get("access_token")
     if not access_token:
@@ -214,17 +171,18 @@ async def dashboard_page(request: Request, db: AsyncSession = Depends(get_db)):
     if not payload or "sub" not in payload:
         return RedirectResponse(url="/admin/login", status_code=status.HTTP_303_SEE_OTHER)
 
-    stmt = select(Petugas).where(Petugas.username == payload["sub"])
-    result = await db.execute(stmt)
-    petugas = result.scalar_one_or_none()
-
-    if not petugas:
+    if payload["sub"] != settings.ADMIN_USERNAME:
         return RedirectResponse(url="/admin/login", status_code=status.HTTP_303_SEE_OTHER)
+
+    petugas_context = {
+        "username": settings.ADMIN_USERNAME,
+        "nama_dinas": "Administrator"
+    }
 
     return templates.TemplateResponse(
         request=request,
         name="dashboard.html",
-        context={"petugas": petugas}
+        context={"petugas": petugas_context}
     )
 
 @router.get("/api/admin/statistik")
