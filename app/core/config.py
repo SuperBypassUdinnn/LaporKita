@@ -24,13 +24,33 @@ settings = Settings()
 # Pemetaan kategori dinas dari Gemini AI ke Target ID Grup di Fonnte
 # Memuat nilai langsung dari environment variables agar ID tidak terekspos.
 DINAS_TARGET_MAPPING = {
+    # Dinas PU
     "Dinas PU": settings.WA_GROUP_PU,
+    "PU": settings.WA_GROUP_PU,
+    
+    # Dinas PDAM / PDAM
     "Dinas PDAM": settings.WA_GROUP_PDAM,
+    "PDAM": settings.WA_GROUP_PDAM,
+    
+    # Dinas Perhubungan
     "Dinas Perhubungan": settings.WA_GROUP_PERHUBUNGAN,
+    "Perhubungan": settings.WA_GROUP_PERHUBUNGAN,
+    "Dishub": settings.WA_GROUP_PERHUBUNGAN,
+    
+    # Dinas Kebersihan
     "Dinas Kebersihan": settings.WA_GROUP_KEBERSIHAN,
+    "Kebersihan": settings.WA_GROUP_KEBERSIHAN,
+    
+    # Dinas Sosial
     "Dinas Sosial": settings.WA_GROUP_SOSIAL,
+    "Sosial": settings.WA_GROUP_SOSIAL,
+    
+    # Dinas Kesehatan
     "Dinas Kesehatan": settings.WA_GROUP_KESEHATAN,
+    "Kesehatan": settings.WA_GROUP_KESEHATAN,
+    
     # Default jika tidak ada yang cocok
     "Dinas Umum": settings.WA_GROUP_UMUM,
     "Tidak Diketahui": settings.WA_GROUP_UMUM
 }
+

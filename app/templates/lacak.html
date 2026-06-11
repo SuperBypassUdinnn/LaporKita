@@ -99,5 +99,13 @@
 
     btnCari.addEventListener('click', cariTiket);
     inputKode.addEventListener('keydown', e => { if (e.key === 'Enter') cariTiket(); });
+
+    // Cek parameter query URL untuk pencarian otomatis
+    const urlParams = new URLSearchParams(window.location.search);
+    const kodeParam = urlParams.get('kode');
+    if (kodeParam) {
+        inputKode.value = kodeParam.toUpperCase();
+        cariTiket();
+    }
 </script>
 {% endblock %}

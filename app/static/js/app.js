@@ -36,9 +36,30 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (result.kode_tiket) {
                     const tiketBox = document.getElementById("tiketBox");
                     const tiketCode = document.getElementById("tiketCode");
+                    const btnSalinTiket = document.getElementById("btnSalinTiket");
+                    const btnLacakTiket = document.getElementById("btnLacakTiket");
+                    
                     if (tiketBox && tiketCode) {
                         tiketCode.textContent = result.kode_tiket;
                         tiketBox.classList.remove("hidden");
+                        
+                        if (btnLacakTiket) {
+                            btnLacakTiket.href = `/lacak?kode=${encodeURIComponent(result.kode_tiket)}`;
+                        }
+                        
+                        if (btnSalinTiket) {
+                            btnSalinTiket.onclick = async () => {
+                                try {
+                                    await navigator.clipboard.writeText(result.kode_tiket);
+                                    btnSalinTiket.textContent = "Tersalin!";
+                                    setTimeout(() => {
+                                        btnSalinTiket.textContent = "Salin Kode";
+                                    }, 2000);
+                                } catch (err) {
+                                    console.error("Gagal menyalin kode tiket: ", err);
+                                }
+                            };
+                        }
                     }
                 }
                 form.reset();
