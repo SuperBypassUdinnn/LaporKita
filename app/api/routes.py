@@ -130,9 +130,9 @@ async def get_lacak_status(kode: str, db: AsyncSession = Depends(get_db)):
     }
 
 @router.get("/admin/login", response_class=HTMLResponse)
-async def login_page(request: Request, error: Optional[str] = None):
+async def login_page(request: Request, error: Optional[str] = None, success: Optional[str] = None):
     """Render the admin login page."""
-    return templates.TemplateResponse(request=request, name="login.html", context={"error": error})
+    return templates.TemplateResponse(request=request, name="login.html", context={"error": error, "success": success})
 
 @router.post("/admin/login")
 async def login_post(
@@ -156,6 +156,45 @@ async def login_post(
     response = RedirectResponse(url="/admin/dashboard", status_code=status.HTTP_303_SEE_OTHER)
     response.set_cookie(key="access_token", value=token, httponly=True)
     return response
+
+@router.get("/admin/register", response_class=HTMLResponse)
+async def register_page(request: Request, error: Optional[str] = None):
+    """Render the admin registration page."""
+    return templates.TemplateResponse(request=request, name="register.html", context={"error": error})
+
+@router.post("/admin/register")
+async def register_post(
+    username: str = Form(...),
+    password: str = Form(...),
+    nama_dinas: str = Form(...),
+    db: AsyncSession = Depends(get_db)
+):
+    """Handle admin registration submission."""
+    stmt = select(Petugas).where(Petugas.username == username)
+    result = await db.execute(stmt)
+    existing = result.scalar_one_or_none()
+
+    if existing:
+        return RedirectResponse(
+            url="/admin/register?error=Username+sudah+terdaftar", 
+            status_code=status.HTTP_303_SEE_OTHER
+        )
+
+    from app.services.auth_service import hash_password
+    pwd_hash = hash_password(password)
+
+    petugas = Petugas(
+        username=username,
+        password_hash=pwd_hash,
+        nama_dinas=nama_dinas
+    )
+    db.add(petugas)
+    await db.commit()
+
+    return RedirectResponse(
+        url="/admin/login?success=Pendaftaran+berhasil.+Silakan+masuk.", 
+        status_code=status.HTTP_303_SEE_OTHER
+    )
 
 @router.get("/admin/logout")
 async def logout():
