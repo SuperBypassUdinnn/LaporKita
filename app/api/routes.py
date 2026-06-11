@@ -235,15 +235,16 @@ async def get_dashboard_laporan(request: Request, db: AsyncSession = Depends(get
         return JSONResponse(status_code=status.HTTP_401_UNAUTHORIZED, content={"detail": "Unauthorized"})
 
     stmt = (
-        select(LaporanMentah, TriaseAI)
+        select(LaporanMentah, TriaseAI, Pelapor)
         .outerjoin(TriaseAI, LaporanMentah.id == TriaseAI.laporan_id)
+        .join(Pelapor, LaporanMentah.pelapor_id == Pelapor.id)
         .order_by(LaporanMentah.timestamp.desc())
     )
     result = await db.execute(stmt)
     rows = result.all()
 
     reports = []
-    for laporan, triase in rows:
+    for laporan, triase, pelapor in rows:
         status_val = "MENUNGGU"
         kategori = "-"
         urgensi = "-"
@@ -259,7 +260,10 @@ async def get_dashboard_laporan(request: Request, db: AsyncSession = Depends(get
             "kategori_dinas": kategori,
             "urgensi": urgensi,
             "status": status_val,
-            "timestamp": laporan.timestamp.isoformat() if laporan.timestamp else None
+            "timestamp": laporan.timestamp.isoformat() if laporan.timestamp else None,
+            "nama_pelapor": pelapor.nama,
+            "nik_pelapor": pelapor.nik,
+            "no_hp_pelapor": pelapor.no_hp
         })
 
     return reports
