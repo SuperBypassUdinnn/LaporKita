@@ -1,15 +1,30 @@
 # LaporKita - Sistem Otomatisasi Triase Keluhan Publik
 
+[Laporan Tugas Akhir Sistem Informasi C](https://docs.google.com/document/d/15LISFFhB2P2YJeu6NCEfySJRpqHzojJAFwou4GGsTY8/edit?tab=t.43tkkdk70h6c)
+
 **LaporKita** adalah platform pengaduan masyarakat pintar berbasis web yang dirancang untuk mempercepat proses penanganan laporan warga. Dengan memanfaatkan kecerdasan buatan (**Google Gemini 2.5 Flash**), sistem ini secara otomatis mengklasifikasikan kategori dinas, menentukan tingkat urgensi, memvalidasi kelengkapan informasi spasial/lokasi aduan, serta meneruskan notifikasi secara langsung ke grup WhatsApp dinas terkait melalui **Fonnte API**.
+
+---
+
+## Tujuan Pengembangan Aplikasi
+
+Aplikasi **LaporKita** dikembangkan dengan tujuan untuk:
+1. **Mempercepat Pelayanan Publik:** Mengotomatisasi proses triase laporan masyarakat secara instan tanpa memerlukan petugas manual untuk memilah jenis keluhan.
+2. **Efisiensi Disposisi:** Meneruskan keluhan langsung ke kelompok kerja/dinas yang berwenang via grup WhatsApp secara otomatis.
+3. **Mengurangi Sampah Informasi:** Menyaring pengaduan yang tidak valid (misal: aduan spam atau yang tidak mencantumkan lokasi kejadian yang jelas) secara otomatis menggunakan AI.
+4. **Meningkatkan Transparansi:** Memberikan kemudahan bagi masyarakat untuk melacak status penanganan aduan secara real-time menggunakan kode tiket.
 
 ---
 
 ## Fitur Utama
 
 - **AI-Powered Triaging (Zero-Shot Classification):** Menggunakan **Gemini 2.5 Flash** untuk menganalisis teks keluhan bebas dari warga secara instan.
-- **Validasi Spasial Otomatis:** Laporan yang tidak menyertakan lokasi kejadian yang jelas (nama jalan, bangunan, atau kecamatan) akan otomatis ditolak (`REJECTED`) oleh AI guna menyaring laporan spam.
-- **WhatsApp Group Routing:** Pesan keluhan tidak dikirim ke nomor pribadi, melainkan langsung ke **WhatsApp Group** instan yang sesuai dengan kategori dinas (misal: Dinas PU, Dinas PDAM, Dinas Kebersihan, dll.) menggunakan **Fonnte API**.
-- **Bypass Latensi dengan Background Tasks:** Menggunakan fitur `BackgroundTasks` dari FastAPI untuk menyimpan laporan mentah terlebih dahulu, kemudian memproses triase AI dan pengiriman WhatsApp di latar belakang. Klien web mendapatkan respons instan (`HTTP 202 Accepted`) tanpa perlu menunggu panggilan API eksternal selesai.
+- **Validasi Spasial Otomatis:** Laporan yang tidak menyertakan lokasi kejadian yang jelas (nama jalan, bangunan, atau kecamatan) akan otomatis ditolak (`REJECTED`) oleh AI guna menyaring aduan spam atau aduan tidak lengkap.
+- **WhatsApp Group Routing:** Pesan keluhan diteruskan langsung ke grup WhatsApp dinas terkait (Dinas PU, Dinas PDAM, Dinas Perhubungan, Dinas Kebersihan, Dinas Sosial, Dinas Kesehatan, Dinas Umum) secara dinamis menggunakan **Fonnte API**.
+- **Sistem Tiket & Pelacakan Keluhan Warga:** Menghasilkan kode tiket unik `LK-XXXXXX` (6 karakter alfanumerik acak) untuk setiap keluhan yang berhasil dikirim. Warga dapat memantau status disposisi dinas dan tingkat urgensi secara real-time melalui halaman `/lacak`.
+- **Dashboard Pemantauan & Statistik Internal Admin (Backoffice):** Halaman `/admin/dashboard` yang menampilkan ringkasan statistik aduan (Total Laporan, Laporan Ditolak, Persentase Diterima) dan grafik visual distribusi laporan per dinas/urgensi menggunakan Chart.js.
+- **Sesi Keamanan Admin Terproteksi:** Autentikasi portal admin berbasis JWT token yang disimpan dengan aman dalam cookie HTTPOnly. Menggunakan akun administrator tunggal terpusat via kredensial `.env` tanpa pendaftaran petugas mandiri di database.
+- **Bypass Latensi dengan Background Tasks:** Menggunakan fitur `BackgroundTasks` dari FastAPI untuk menyimpan laporan mentah terlebih dahulu, kemudian memproses triase AI dan pengiriman WhatsApp di latar belakang. Klien web mendapatkan respons instan (`HTTP 202 Accepted`) tanpa menunggu panggilan API eksternal selesai.
 - **Supabase Integration & Connection Pooling:** Menggunakan database relasional PostgreSQL di cloud Supabase secara asinkron dengan SQLAlchemy dan `asyncpg`. Dikonfigurasi secara khusus untuk menonaktifkan *prepared statements* agar kompatibel dengan *Transaction Mode* pada pooler Supabase (port 6543).
 - **SEO-Optimized SSR Frontend:** Menggunakan Server-Side Rendering (SSR) berbasis Jinja2 Templates dengan penataan visual menggunakan Tailwind CSS yang responsif, modern, dan ramah terhadap mesin pencari (SEO-Friendly).
 
@@ -23,6 +38,66 @@
 - **AI Middleware:** Google GenAI SDK (Gemini 2.5 Flash)
 - **WhatsApp Gateway:** Fonnte API
 - **Frontend:** HTML5, Tailwind CSS (via CDN), Vanilla JS, & Jinja2 Templates
+- **Visualisasi & Charting:** Chart.js v4 (Daftar Laporan, Distribusi Urgensi, Laporan per Dinas)
+
+---
+
+## Struktur Database
+
+Aplikasi menggunakan database relasional PostgreSQL dengan tiga tabel utama berikut:
+
+### 1. Tabel `pelapor`
+Menyimpan informasi identitas unik warga yang melakukan pelaporan aduan.
+| Nama Kolom | Tipe Data | Atribut | Deskripsi |
+| :--- | :--- | :--- | :--- |
+| `id` | UUID | PRIMARY KEY, DEFAULT gen_random_uuid() | ID unik pelapor |
+| `nik` | VARCHAR | UNIQUE, INDEX | NIK pelapor (16 digit) |
+| `nama` | VARCHAR | NOT NULL | Nama lengkap pelapor |
+| `no_hp` | VARCHAR | NOT NULL | Nomor HP / WhatsApp pelapor |
+
+### 2. Tabel `laporan_mentah`
+Menyimpan isi data laporan mentah yang diinputkan oleh warga.
+| Nama Kolom | Tipe Data | Atribut | Deskripsi |
+| :--- | :--- | :--- | :--- |
+| `id` | UUID | PRIMARY KEY, DEFAULT gen_random_uuid() | ID unik laporan |
+| `pelapor_id` | UUID | FOREIGN KEY REFERENCES `pelapor(id)` | Referensi ke pelapor |
+| `kecamatan` | VARCHAR | NOT NULL | Lokasi kecamatan kejadian |
+| `keluhan_teks_bebas` | TEXT | NOT NULL | Deskripsi keluhan warga |
+| `timestamp` | TIMESTAMPTZ| DEFAULT NOW() | Waktu laporan diterima |
+| `kode_tiket` | VARCHAR | UNIQUE, INDEX | Kode tiket alfanumerik (`LK-XXXXXX`) |
+
+### 3. Tabel `triase_ai`
+Menyimpan hasil klasifikasi cerdas AI (Gemini) dan status penanganan/disposisi laporan.
+| Nama Kolom | Tipe Data | Atribut | Deskripsi |
+| :--- | :--- | :--- | :--- |
+| `id` | UUID | PRIMARY KEY, DEFAULT gen_random_uuid() | ID unik triase |
+| `laporan_id` | UUID | FOREIGN KEY REFERENCES `laporan_mentah(id)` | Referensi ke laporan |
+| `kategori_dinas` | VARCHAR | NOT NULL | Klasifikasi dinas penerima |
+| `urgensi` | VARCHAR | NOT NULL | Tingkat urgensi aduan (`Tinggi`, `Sedang`, `Rendah`) |
+| `status_json` | VARCHAR | NOT NULL | Status aduan (`ACCEPTED`, `REJECTED`) |
+| `waktu_disposisi` | TIMESTAMPTZ| DEFAULT NOW() | Waktu disposisi notifikasi |
+
+---
+
+## Screenshot Tampilan Aplikasi
+
+Berikut adalah dokumentasi visual antarmuka sistem **LaporKita**:
+
+### 1. Form Pengaduan Warga
+Halaman utama di mana masyarakat dapat mengirim laporan dengan mengisi identitas diri dan keluhan secara bebas.
+![Form Keluhan Publik](assets/img/form-keluhan.png)
+
+### 2. Halaman Lacak Status Keluhan
+Halaman pelacakan keluhan warga dengan memasukkan kode tiket untuk memantau status disposisi dinas dan tingkat urgensi secara real-time.
+![Cek Status Keluhan](assets/img/form-cek-status-keluhan.png)
+
+### 3. Dashboard Pemantauan Admin (Backoffice)
+Halaman dashboard monitoring internal dinas yang menyajikan ringkasan statistik aduan dan diagram distribusi laporan per dinas/urgensi menggunakan Chart.js.
+![Dashboard Admin](assets/img/admin-dashboard.png)
+
+### 4. Detail Modal Keluhan & Riwayat
+Tampilan modal rincian pengaduan yang memuat detail identitas pelapor (Nama, NIK, No. HP) secara lengkap bagi petugas admin yang terautentikasi.
+![Detail Keluhan](assets/img/riwayat-keluhan.png)
 
 ---
 
@@ -125,6 +200,10 @@ WA_GROUP_KEBERSIHAN=120363xxxxxxxxx@g.us
 WA_GROUP_SOSIAL=120363xxxxxxxxx@g.us
 WA_GROUP_KESEHATAN=120363xxxxxxxxx@g.us
 WA_GROUP_UMUM=120363xxxxxxxxx@g.us
+
+# Kredensial Administrator Portal Dinas (Hardcoded)
+ADMIN_USERNAME=admin
+ADMIN_PASSWORD=admin123
 ```
 
 > [!IMPORTANT]
